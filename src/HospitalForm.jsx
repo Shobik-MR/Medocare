@@ -7,21 +7,19 @@ import "./index.css";
   const navigate = useNavigate();
   const token = location.state?.token;
 
-  // 🔐 protect page
-  useEffect(() => {
-    if (!token) navigate("/");
-  }, [token]);
-
-
   const [form, setForm] = useState({
-    hospitalName: "",
-    beds: "",
-    doctors: "",
-    emergency: "",
-    ambulance: "",
-  });
+  hospitalName: "",
+  beds: "",
+  doctors: "",
+  emergency: "",
+  ambulance: "",
+});
 
-  const [status, setStatus] = useState("");
+const [status, setStatus] = useState("");
+const [preRegs, setPreRegs] = useState([]);
+
+
+
 
   
     // 🏥 get hospital data
@@ -38,6 +36,37 @@ import "./index.css";
         if (data) setForm(data);
       });
   }, [token]);
+  
+ 
+
+const updateStatus = async (id, status) => {
+  try {
+    const res = await fetch(`http://localhost:5000/prehospital/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    const updated = await res.json();
+    setPreRegs(prev => prev.map(p => (p._id === id ? updated : p)));
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+
+  // 🔐 protect page
+  useEffect(() => {
+    if (!token) navigate("/");
+  }, [token]);
+
+ useEffect(() => {
+  if (!form.hospitalName) return;
+
+  fetch(`http://localhost:5000/prehospital/${form.hospitalName}`)
+    .then(res => res.json())
+    .then(data => setPreRegs(data))
+    .catch(err => console.log(err));
+}, [form.hospitalName]);
 
 
   // ✅ update
@@ -54,6 +83,15 @@ import "./index.css";
     });
 
     setStatus("Updated successfully");
+
+
+    //pre-register
+    
+
+
+
+
+    //pre-register
   };
 
   return (
@@ -104,11 +142,41 @@ import "./index.css";
     {status && (
   <div className="status-box">
     {status}
-  </div>
-)}
 
+  </div>
+  )}
+ 
+   <div className="preRegContainer">
+<h3>Pre-Registered Patients</h3>
+{preRegs.length === 0 ? (
+  <p>No pre-registrations yet</p>
+) : (
+  preRegs.map(p => (
+    <div key={p._id} className="preRegCard">
+      <p>Name: {p.patientName}</p>
+      <p>Age: {p.age}</p>
+      <p>Problem: {p.problem}</p>
+      <p>Status: {p.status}</p>
+      {p.status === "pending" && (
+        <>
+          <button  className="btn4" onClick={() => updateStatus(p._id, "accepted")}>Accept</button>
+          <button className="btn4" onClick={() => updateStatus(p._id, "cancelled")}>Cancel</button>
+        </>
+      )}
     </div>
+  ))
+  )}
+  </div>
+     </div>
 
   );
 }
+
+
+
+
+
+
+
+ 
 export default HospitalForm;

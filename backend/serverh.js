@@ -131,6 +131,30 @@ app.get("/gethospitals", async (req, res) => {
   res.json(hospitals);
 });
 
+const PreRegister = require("./PreRegister"); // import schema
+
+// 📝 patient pre-registration
+app.post("/preregister", async (req, res) => {
+  try {
+    const preReg = await PreRegister.create(req.body);
+    res.json({ success: true, message: "Pre-registration sent" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+app.get("/prehospital/:hospitalName", async (req, res) => {
+  const hospitalName = req.params.hospitalName;
+  const patients = await PreRegister.find({ hospitalName });
+  res.json(patients);
+});
+
+app.patch("/prehospital/:id", async (req, res) => {
+  const { status } = req.body; // accepted / cancelled
+  const updated = await PreRegister.findByIdAndUpdate(req.params.id, { status }, { new: true });
+  res.json(updated);
+});
+
 
 
 app.listen(5000, () => console.log("🚀 Server running on port 5000"));
