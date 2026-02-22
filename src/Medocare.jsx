@@ -31,7 +31,7 @@ import './index.css';
         <div className="card">
           <h3> Find Hospital</h3>
           
-          <button>Search Hospital</button>
+          <button onClick={() => navigate("/findhospital")}>Search Hospital</button>
         </div>
 
         <div className="card">
