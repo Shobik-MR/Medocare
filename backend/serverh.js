@@ -136,10 +136,17 @@ const PreRegister = require("./PreRegister"); // import schema
 // 📝 patient pre-registration
 app.post("/preregister", async (req, res) => {
   try {
-    const preReg = await PreRegister.create(req.body);
-    res.json({ success: true, message: "Pre-registration sent" });
+    await PreRegister.create(req.body);
+
+    res.json({
+      success: true
+    });
+
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
   }
 });
 

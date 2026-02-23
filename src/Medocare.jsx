@@ -15,7 +15,7 @@ import './index.css';
 
       {/* Hero */}
       <section className="hero">
-        <h2>Medocare Healthcare</h2>
+        <h2>Medocare </h2>
         <p>Find hospitals • Book ambulance • Real-time emergency support</p>
       </section>
 

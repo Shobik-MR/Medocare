@@ -36,6 +36,24 @@ const [preRegs, setPreRegs] = useState([]);
         if (data) setForm(data);
       });
   }, [token]);
+
+  //location
+    const getLocation = () => {
+  navigator.geolocation.getCurrentPosition((pos) => {
+   setForm((prev) => ({
+  ...prev,
+  location: {
+    lat: pos.coords.latitude,
+    lng: pos.coords.longitude
+  }
+}));
+  });
+};
+
+
+
+
+    //location
   
  
 
@@ -83,15 +101,6 @@ const updateStatus = async (id, status) => {
     });
 
     setStatus("Updated successfully");
-
-
-    //pre-register
-    
-
-
-
-
-    //pre-register
   };
 
   return (
@@ -133,6 +142,9 @@ const updateStatus = async (id, status) => {
         value={form.ambulance}
         onChange={(e) => setForm({ ...form, ambulance: e.target.value })}
       />
+      <button  className="btn1" type="button" onClick={getLocation}>
+  Get Current Location
+</button>
    
        <button className="btn1" type="submit">
             Update Status

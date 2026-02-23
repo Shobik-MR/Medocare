@@ -3,7 +3,11 @@ import "./index.css";
 
 function Dashboard() {
   const [data, setData] = useState([]);
+   const [filtered, setFiltered] = useState([]);
+
   const [search, setSearch] = useState("");
+  const [emergencyFilter, setEmergencyFilter] = useState("");
+  
 
   // ✅ PLACE IT HERE
   useEffect(() => {
@@ -22,17 +26,53 @@ function Dashboard() {
 
   }, []);
 
- const filtered = data.filter((h) =>
-  h.hospitalName?.toLowerCase().includes(search.toLowerCase())
-);
+  // 🔹 SEARCH + FILTER LOGIC
+  useEffect(() => {
+
+    let result = data;
+
+    // 🔍 search by hospital name
+    if (search) {
+      result = result.filter((item) =>
+        item.hospitalName.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    // 🚑 emergency filter
+    if (emergencyFilter) {
+      result = result.filter(
+        (item) => item.emergency === emergencyFilter
+      );
+    }
+
+    setFiltered(result);
+
+  }, [search, emergencyFilter, data]);
+
 
   return (
     <div className="dashboard">
-      <input className="DS1"
-        type="text"
-        placeholder="Search hospital..."
-        onChange={(e) => setSearch(e.target.value)}
-      />
+        <div className="searchFilter">
+
+        <input
+          type="text"
+          placeholder="Search hospital..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+
+        <select
+          value={emergencyFilter}
+          onChange={(e) => setEmergencyFilter(e.target.value)}
+        >
+          <option value="">All Emergency</option>
+          <option value="Cardiac">Cardiac</option>
+          <option value="Accident">Accident</option>
+          <option value="General">General</option>
+        </select>
+
+      </div>
+
 
       {filtered.length === 0 ? (
         <h2>No Data</h2>

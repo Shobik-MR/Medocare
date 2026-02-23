@@ -7,7 +7,7 @@ import HospitalForm from "./HospitalForm";
 import Dashboard from "./Dashboard";
 import FindHospital from "./FindHospital";
 import PreRegisterForm from "./PreRegisterForm";
-
+import Navigation from "./navigation";
 function App() {
  
 
@@ -17,9 +17,11 @@ function App() {
   <Route path="/Admin" element={<Admin />} />
   <Route path="/hospitalform" element={<HospitalForm />} />
   <Route path="/dashboard" element={<Dashboard />} />
+ <Route path="/navigation" element={<Navigation />} />
   <Route path="/findhospital" element={<FindHospital />} />
   <Route path="/preregister" element={<PreRegisterForm />} />
 </Routes>
+
   );
 }
 

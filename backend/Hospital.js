@@ -6,6 +6,10 @@ const hospitalSchema = new mongoose.Schema({
   doctors: Number,
   emergency: String,
   ambulance: String,
+   location: {
+    lat: Number,
+    lng: Number
+  }
 });
 
 module.exports = mongoose.model("Hospital", hospitalSchema);
