@@ -1,12 +1,10 @@
-
-
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-const Hospital = require("./hospital");
+const Hospital = require("./Hospital");
 const Admin = require("./Admin");
 
 const app = express();
@@ -15,122 +13,145 @@ app.use(express.json());
 
 const SECRET = "medocarekey";
 
-// ✅ MongoDB connection
+// ================= DATABASE =================
+
 mongoose.connect("mongodb://127.0.0.1:27017/hospitalDB")
-.then(() => console.log("✅ MongoDB Connected"))
-.catch(err => console.log(err));
-
-
-// ================== APIs ==================
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch(err => console.log(err));
 
 
 // ================= ADMIN AUTH =================
 
 // ✅ SIGNUP
 app.post("/api/admin/signup", async (req, res) => {
+  try {
+    const { hospitalName, email, password } = req.body;
 
-  const { hospitalName, email, password } = req.body;
+    const existing = await Admin.findOne({ email });
+    if (existing) {
+      return res.json({ success: false, message: "Email already exists" });
+    }
 
-  const hashed = await bcrypt.hash(password, 10);
+    const hashed = await bcrypt.hash(password, 10);
 
-  const admin = await Admin.create({
-    hospitalName,
-    email,
-    password: hashed,
-  });
+    const admin = await Admin.create({
+      hospitalName,
+      email,
+      password: hashed,
+    });
 
-  await Hospital.create({
-  hospitalName,
-});
-const token = jwt.sign(
-  {
-    id: admin._id,
-    hospitalName: admin.hospitalName
-  },
-  SECRET,
-  { expiresIn: "1d" }
-);
+    await Hospital.create({
+      hospitalName,
+    });
 
-  res.json({
-    success: true,
-    hospitalName: admin.hospitalName,
-    token
-  });
+    const token = jwt.sign(
+      {
+        id: admin._id,
+        hospitalName: admin.hospitalName
+      },
+      SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.json({
+      success: true,
+      hospitalName: admin.hospitalName,
+      token
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 
 // ✅ LOGIN
 app.post("/api/admin/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-  const { email, password } = req.body;
+    const admin = await Admin.findOne({ email });
+    if (!admin) return res.json({ success: false });
 
-  const admin = await Admin.findOne({ email });
+    const match = await bcrypt.compare(password, admin.password);
+    if (!match) return res.json({ success: false });
 
-  if (!admin) return res.json({ success: false });
+    const token = jwt.sign(
+      {
+        id: admin._id,
+        hospitalName: admin.hospitalName
+      },
+      SECRET,
+      { expiresIn: "1d" }
+    );
 
-  const match = await bcrypt.compare(password, admin.password);
+    res.json({
+      success: true,
+      token,
+      hospitalName: admin.hospitalName,
+    });
 
-  if (!match) return res.json({ success: false });
-
-  const token = jwt.sign(
-    { hospitalName: admin.hospitalName },
-    SECRET
-  );
-
-  res.json({
-    success: true,
-    token,
-    hospitalName: admin.hospitalName,
-  });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
+
+
+// ================= GET MY HOSPITAL =================
 
 app.get("/myhospital", async (req, res) => {
-  const token = req.headers.authorization?.split(" ")[1];
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json("No token");
 
-  if (!token) return res.status(401).json("No token");
+    const decoded = jwt.verify(token, SECRET);
 
-  const decoded = jwt.verify(token, SECRET);
+    const hospital = await Hospital.findOne({
+      hospitalName: decoded.hospitalName,
+    });
 
-  const hospital = await Hospital.findOne({
-    hospitalName: decoded.hospitalName,
-  });
+    res.json(hospital);
 
-  res.json(hospital);
+  } catch (error) {
+    res.status(401).json("Invalid token");
+  }
 });
-
 
 
 // ================= HOSPITAL =================
 
 // ✅ ADD / UPDATE hospital
 app.post("/addhospital", async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json("No token");
 
-  const token = req.headers.authorization?.split(" ")[1];
+    const decoded = jwt.verify(token, SECRET);
 
-  if (!token) return res.status(401).json("No token");
+    const updated = await Hospital.findOneAndUpdate(
+      { hospitalName: decoded.hospitalName },
+      req.body,
+      { new: true, upsert: true }
+    );
 
-  const decoded = jwt.verify(token, SECRET);
+    res.json(updated);
 
-  const updated = await Hospital.findOneAndUpdate(
-    { hospitalName: decoded.hospitalName },
-    req.body,
-    { new: true, upsert: true }
-  );
-
-  res.json(updated);
+  } catch (error) {
+    res.status(401).json("Invalid token");
+  }
 });
-// ✅ GET hospitals
+
 app.get("/gethospital/:name", async (req, res) => {
   const data = await Hospital.findOne({ hospitalName: req.params.name });
   res.json(data);
 });
 
-// ✅ GET ALL hospitals for Dashboard
 app.get("/gethospitals", async (req, res) => {
   const hospitals = await Hospital.find();
   res.json(hospitals);
 });
 
 
+// ================= SERVER =================
 
 app.listen(5000, () => console.log("🚀 Server running on port 5000"));
