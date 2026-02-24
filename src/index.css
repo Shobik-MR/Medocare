@@ -314,17 +314,22 @@
   
 }
 .card2 {
+width: 90%;              /* fluid width */
+  max-width: 500px;       /* desktop limit */
+  margin: 15px auto;
+
+  padding: 1.2rem;        /* scalable spacing */
+  border-radius: 15px;
+
   background: rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(12px);
-  padding: 20px;
-  border-radius: 15px;
-  width: 320px;
-  text-align: center;
-  color:linear-gradient(to right, #0a2540, #1e90ff);
   box-shadow: 0 0 25px rgba(0,0,0,0.3);
-   background: white;
-   display: block;
-    margin: 15px auto;
+
+  text-align: center;
+
+  /* gradient text properly */
+  background: white;
+  color: #0a2540;
 }
 
 /*Findhospital*/
@@ -453,7 +458,7 @@
   border-color: #0a2540;
 }
 
-/* Optional: same height for both */
+
 .searchFilter input,
 .searchFilter select {
   height: 45px;
